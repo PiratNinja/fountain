@@ -35,6 +35,8 @@
 #include "stm32f1xx_hal.h"
 #include "dmx.h"
 
+//#define DEBUG
+
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -119,7 +121,9 @@ static inline void generalPort() {
 
 	} else if (recState == 2) {
 		addCommand((Command*)recBuf, countRecByte);
+#ifdef DEBUG
 		HAL_UART_Transmit_IT(&huart1, recBuf, countRecByte);
+#endif
 		countRecByte = 0;
 		recState = 0;
 
@@ -131,17 +135,12 @@ static inline void generalPort() {
 
 static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* updateBulbs, BulbsGroup* bulbsData) {
 
-	uint8_t *firstPartData, *secondPartData;
-	uint16_t firstPartLength, secondPartLength;
+	static uint8_t *firstPartData, *secondPartData;
+	static uint16_t firstPartLength, secondPartLength;
 	uint8_t startByte = 0;
 
-	firstPartData = (uint8_t*) &(bulbsData->bulbs[bulbsData->curPos]);
-	firstPartLength = (bulbsData->countBulbs - bulbsData->curPos) * sizeof(Bulb);
-	secondPartData = (uint8_t*) &(bulbsData->bulbs[0]);
-	secondPartLength = bulbsData->curPos * sizeof(Bulb);
-
 	if (dmxState == 0) {
-		if (curTime - *lastTime > 1000) { // отправл€ем через в 10мс
+		if (curTime - *lastTime > DMX_TX_DELAY) { // отправл€ем через в 10мс
 			*lastTime = curTime;
 			dmxState = 1;
 		}
@@ -149,6 +148,12 @@ static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* update
 		// отправл€ем break
 		dmxState = 2;
 		dmx_pin_break();
+
+		firstPartData = (uint8_t*) &(bulbsData->bulbs[bulbsData->curPos]);
+		firstPartLength = (bulbsData->countBulbs - bulbsData->curPos) * sizeof(Bulb);
+		secondPartData = (uint8_t*) &(bulbsData->bulbs[0]);
+		secondPartLength = bulbsData->curPos * sizeof(Bulb);
+
 	} else if (dmxState == 2) {
 		if (curTime > *lastTime) {
 			dmxState = 3;
@@ -207,13 +212,15 @@ int main(void) {
 	uint32_t curTime = lastTime;
 	uint8_t updateBulbs = 0;
 
-	//uint8_t beginSecondPart = 0;
+	//BulbsGroup* bulbsData = &uprBulbs;
 	BulbsGroup* bulbsData = &lwrBulbs;
-	//DEBUG
-	uint8_t i = 0;
-	uint8_t count = 10;
-	uint8_t stp = 1;
-	//bulbsData->curPos = 10;
+
+	bulbsData->countBulbs = MAX_COUNT_BULBS;
+	bulbsData->curPos = 0;
+	Bulb b = {255, 255, 255, 0};
+	for(uint8_t i = 0; i < bulbsData->countBulbs; i++)
+		bulbsData->bulbs[i] = b;
+	updateBulbs = 1; //максимальна €ркость на все цвета
 
 	while (1) {
 

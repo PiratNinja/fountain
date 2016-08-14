@@ -19,8 +19,9 @@ SetTickerCmd.rowCount строк циклически сдвигать
 
 #include "stm32f1xx_hal.h"
 
-#define MAX_COUNT_BULBS 	(uint8_t) 128
-#define MAX_LENGTH_QUEUE 	(uint8_t) 10
+#define MAX_COUNT_BULBS 	(uint8_t) 127
+#define MAX_LENGTH_QUEUE 	(uint8_t) 100
+#define DMX_TX_DELAY		(uint32_t) 1
 
 typedef enum {
     PLAIN_ROW = 1,         		// Несжатая строка

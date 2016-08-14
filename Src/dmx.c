@@ -93,28 +93,33 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 		else {
 			return upperTickerPrc() | lowerTickerPrc();
 		}
-
 	break;
 
 	case SET_BULBS_COUNT:
-		lwrBulbs.countBulbs = cmd->data.bulbsCount.lowerBulbsCount;
-		uprBulbs.countBulbs = cmd->data.bulbsCount.upperBulbsCount;
+		lwrBulbs.curPos = 0;
+		uprBulbs.curPos = 0;
+		if(cmd->data.bulbsCount.lowerBulbsCount <= MAX_COUNT_BULBS) lwrBulbs.countBulbs = cmd->data.bulbsCount.lowerBulbsCount;
+		if(cmd->data.bulbsCount.upperBulbsCount <= MAX_COUNT_BULBS) uprBulbs.countBulbs = cmd->data.bulbsCount.upperBulbsCount;
 		return 0;
 	break;
 
 	case SET_BULB_COLOR:
 		if(cmd->data.bulbColor.level > 0) {
 			//нижний уровень
-			lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
-			lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
-			lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
+			if(cmd->data.bulbColor.bulbNUmber <= lwrBulbs.countBulbs) {
+				lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
+				lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
+				lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
+			}
 		}
 		else
 		{
 			//верхний уровень
-			uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
-			uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
-			uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
+			if(cmd->data.bulbColor.bulbNUmber <= uprBulbs.countBulbs) {
+				uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
+				uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
+				uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
+			}
 		}
 		return 1;
 	break;
