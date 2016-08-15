@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QQueue>
 #include <QList>
+#include <QStringList>
 
 class serialDev : public QObject {
     Q_OBJECT

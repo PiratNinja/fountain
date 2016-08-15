@@ -12,38 +12,26 @@ int main(int argc, char *argv[])
  QCoreApplication a(argc, argv);
 
 // Example use SerialPortInfo
- foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
- qDebug() << "Name : " << info.portName();
- qDebug() << "Description : " << info.description();
- qDebug() << "Manufacturer: " << info.manufacturer();
- qDebug() << "Standard BaudRates: " << info.standardBaudRates();
-
-// Example use SerialPort
- QSerialPort serial;
- serial.setPort(info);
- if (serial.open(QIODevice::ReadWrite))
- serial.close();
- }
-
+foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+	qDebug() << "Name : " << info.portName();
+	qDebug() << "Description : " << info.description();
+	qDebug() << "Manufacturer: " << info.manufacturer();
+	qDebug() << "Standard BaudRates: " << info.standardBaudRates();
+}
 system("CLS");
-
-const char cmd1[] = { 4, 7, 1, 0, 0, 0, 0 };
-const char cmd2[] = { 3, 4, 1, 8 };
-
 
 serialDev DMXPort("COM3", 256000);
 serialDev GeneralPort("COM4", 115000);
 
-QByteArray TXData(cmd2, sizeof(cmd2));
+uint bulbsCount = 72;
 
-QByteArray TXData2(cmd1, sizeof(cmd1));
+GeneralPort.passLine("3 0 1 " + QString::number(bulbsCount));
 
-GeneralPort.TXData.enqueue(TXData);
-//GeneralPort.TXData.enqueue(TXData2);
+for(int i = 0; i < bulbsCount; i++)
+	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0");
 
-for(int i = 0; i < 50; i++){
-    GeneralPort.TXData.enqueue(TXData2);
-}
+for(int i = 0; i < bulbsCount; i++)
+	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255");
 
 return a.exec();
 }

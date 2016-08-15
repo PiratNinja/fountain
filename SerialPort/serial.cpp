@@ -15,6 +15,9 @@ serialDev::serialDev(QString portName, int BaudRate){
 
         TXTimer.start(10);
     }
+	//debug
+	connect(&TXTimer, SIGNAL(timeout()), this, SLOT(queueProc()));
+	TXTimer.start(1000);
 }
 
 void serialDev::read() {
@@ -31,14 +34,24 @@ void serialDev::read() {
 }
 
 void serialDev::passLine(QString string){
-    QList<QString> list = string.split(" ");
-    for(auto i = list.begin(); i != list.end(); i++) {
+	QStringList list = string.split(" ");
 
+	QByteArray ba;
+    for(auto i = list.begin(); i != list.end(); i++) {
+		ba.push_back((*i).toInt());
     }
+	TXData.enqueue(ba);
 }
 
 void serialDev::queueProc(void){
-    if(TXData.size()) {
-        port.write(TXData.dequeue());
-    }
+
+//    if(TXData.size()) {
+//        port.write(TXData.dequeue());
+//    }
+
+	//debug
+
+	std::cout << ;
+	if(packetNumber++ %2) std::cout << "\rsome string";
+	else std::cout << "\rsome longer string";
 }
