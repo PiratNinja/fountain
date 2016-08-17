@@ -47,8 +47,8 @@ size:
 	@echo "---------------------------------------------------"
 	@$(SZ) main.elf
 
-main.elf: startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o dmx.o
-	$(LD) $(LFLAGS) -o main.elf startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o dmx.o
+main.elf: startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o
+	$(LD) $(LFLAGS) -o main.elf startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o 
 
 startup.o: $(TMPL)gcc/startup_stm32f100xb.s
 	$(AS) $(AFLAGS) $(TMPL)gcc/startup_stm32f100xb.s -o startup.o > startup.list
@@ -89,8 +89,17 @@ stm32f1xx_hal_dma.o: $(HAL_SRC)stm32f1xx_hal_dma.c
 stm32f1xx_hal_tim.o: $(HAL_SRC)stm32f1xx_hal_tim.c
 	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -c $(HAL_SRC)stm32f1xx_hal_tim.c -o stm32f1xx_hal_tim.o
 
-stm32f1xx_hal_tim_ex.o: $(HAL_SRC)stm32f1xx_hal_tim_ex.c
+stm32f1xx_hal_tim_ex.o: $(HAL_SRC)stm32f1xx_hal_tim_ex.c	
 	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -c $(HAL_SRC)stm32f1xx_hal_tim_ex.c -o stm32f1xx_hal_tim_ex.o
 	
-dmx.o: ./Src/dmx.c
-	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -c ./Src/dmx.c -o dmx.o
+cmd.o: ./dmx/src/cmd.c
+	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./dmx/inc -I./Inc -c ./dmx/src/cmd.c -o cmd.o
+	
+bulb.o: ./dmx/src/bulb.c
+	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./dmx/inc -I./Inc -c ./dmx/src/bulb.c -o bulb.o
+
+queue.o: ./dmx/src/queue.c
+	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./dmx/inc -I./Inc -c ./dmx/src/queue.c -o queue.o
+	
+ticker.o: ./dmx/src/ticker.c
+	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./dmx/inc -I./Inc -c ./dmx/src/ticker.c -o ticker.o
