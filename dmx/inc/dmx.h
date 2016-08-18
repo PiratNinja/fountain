@@ -3,8 +3,8 @@
 
 #include "stm32f1xx_hal.h"
 
-#define MAX_COUNT_BULBS 	(uint8_t) 128
-#define MAX_LENGTH_QUEUE 	(uint8_t) 10
+#define MAX_COUNT_BULBS 	(uint8_t) 127
+#define MAX_LENGTH_QUEUE 	(uint8_t) 100
 
 typedef enum {
     PLAIN_ROW = 1,         		// Несжатая строка

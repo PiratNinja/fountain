@@ -26,7 +26,7 @@ DEF = -DSTM32F100xB
 CPU = cortex-m3
 LD_CMD = "./SW4STM32/fw Configuration/STM32F100C6Tx_FLASH.ld"
 
-CFLAGS  = $(DEF) -Wall -std=c99 -O0 -g -mcpu=$(CPU) -mthumb -fno-common
+CFLAGS  = $(DEF) -Winline -Wall -std=c99 -O1 -g -mcpu=$(CPU) -mthumb -fno-common
 AFLAGS  = -ahls -mapcs-32
 LFLAGS  = -v -nostartfiles --gc-sections -T $(LD_CMD)
 CPFLAGS = -Obinary
@@ -47,8 +47,8 @@ size:
 	@echo "---------------------------------------------------"
 	@$(SZ) main.elf
 
-main.elf: startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o
-	$(LD) $(LFLAGS) -o main.elf startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o 
+main.elf: startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o bulb.o queue.o ticker.o
+	$(LD) $(LFLAGS) -o main.elf startup.o system.o main.o stm32f1xx_hal_msp.o stm32f1xx_it.o stm32f1xx_hal.o stm32f1xx_hal_rcc.o stm32f1xx_hal_cortex.o stm32f1xx_hal_gpio.o stm32f1xx_hal_uart.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_dma.o stm32f1xx_hal_tim.o stm32f1xx_hal_tim_ex.o cmd.o bulb.o queue.o ticker.o
 
 startup.o: $(TMPL)gcc/startup_stm32f100xb.s
 	$(AS) $(AFLAGS) $(TMPL)gcc/startup_stm32f100xb.s -o startup.o > startup.list
@@ -57,7 +57,7 @@ system.o: $(TMPL)system_stm32f1xx.c
 	$(CC) $(CFLAGS) -I$(DEV_INC) -I$(CMSIS_INC) -c $(TMPL)system_stm32f1xx.c -o system.o
 
 main.o: ./Src/main.c
-	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -c ./Src/main.c -o main.o
+	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -I./dmx/inc -c ./Src/main.c -o main.o
 
 stm32f1xx_hal_msp.o: ./Src/stm32f1xx_hal_msp.c
 	$(CC) $(CFLAGS) -I$(HAL_INC) -I$(DEV_INC) -I$(CMSIS_INC) -I./Inc -c ./Src/stm32f1xx_hal_msp.c -o stm32f1xx_hal_msp.o

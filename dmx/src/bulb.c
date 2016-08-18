@@ -1,18 +1,18 @@
 #include "bulb.h"
 
-static BulbsGroup uprBulbs;
-static BulbsGroup lwrBulbs;
+BulbsGroup uprBulbs;
+BulbsGroup lwrBulbs;
 
-static inline void setUprBulbColor(const Command* cmd) {
+inline void setUprBulbColor(const Command* cmd) {
 		uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
 		uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
 		uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
 }
 
-static inline void setLwrBulbColor(const Command* cmd) {
+inline void setLwrBulbColor(const Command* cmd) {
 		lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].blue = cmd->data.bulbColor.blue;
 		lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].green = cmd->data.bulbColor.green;
-		lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
+		lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;		
 }
 
 void setBulbColor(const Command* cmd) {
@@ -38,5 +38,13 @@ uint8_t getPosition(Level level) {
 void setPosition(Level level, uint8_t position) {
 	if (level) lwrBulbs.curPos = position;
 		else   uprBulbs.curPos = position;
+}
+
+BulbsGroup* getUprBulbs(void) {
+	return &uprBulbs;
+}
+
+BulbsGroup* getLwrBulbs(void) {
+	return &lwrBulbs;
 }
 

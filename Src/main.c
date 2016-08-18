@@ -34,6 +34,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 #include "dmx.h"
+#include "bulb.h"
+#include "cmd.h"
+#include "queue.h"
 
 //#define DEBUG
 
@@ -41,14 +44,10 @@
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
-extern SetTicker uprTickerConf;
-extern SetTicker lwrTickerConf;
-
-extern BulbsGroup uprBulbs;
-extern BulbsGroup lwrBulbs;
-
 // получаем только номер команды и состояние цветов
-#define RECV_SIZE 128
+#define RECV_SIZE 		(uint8_t) 128
+#define DMX_TX_DELAY 	(uint8_t) 1
+
 uint8_t recBuf[RECV_SIZE];
 uint8_t tmp;
 uint8_t recState = 0, dmxState = 0;
@@ -145,7 +144,7 @@ static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* update
 			dmxState = 1;
 		}
 	} else if (dmxState == 1) {
-		// отправляем break
+	// отправляем break
 		dmxState = 2;
 		dmx_pin_break();
 
@@ -213,7 +212,7 @@ int main(void) {
 	uint8_t updateBulbs = 0;
 
 	//BulbsGroup* bulbsData = &uprBulbs;
-	BulbsGroup* bulbsData = &lwrBulbs;
+	BulbsGroup* bulbsData = getLwrBulbs();
 
 	bulbsData->countBulbs = MAX_COUNT_BULBS;
 	bulbsData->curPos = 0;

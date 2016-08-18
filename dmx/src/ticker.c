@@ -63,6 +63,6 @@ uint8_t upperTickerPrc() {
 		else
 			setPosition(R_RING_SHIFT(getPosition(UPPER), uprTickerConf.stepShift, getCount(UPPER)), UPPER);
 		countRow = 0;
-		return 1;
+		return 1;	
 	}
 }
