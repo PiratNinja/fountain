@@ -18,20 +18,30 @@ foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
 	qDebug() << "Manufacturer: " << info.manufacturer();
 	qDebug() << "Standard BaudRates: " << info.standardBaudRates();
 }
-system("CLS");
+//system("CLS");
 
-serialDev DMXPort("COM3", 256000);
-serialDev GeneralPort("COM4", 115000);
+serialDev DMXPort("COM3", 256000, QSerialPort::TwoStop);
+serialDev GeneralPort("COM4", 115000, QSerialPort::OneStop);
 
 uint bulbsCount = 72;
 
-GeneralPort.passLine("3 0 1 " + QString::number(bulbsCount));
+GeneralPort.passLine("3 4 1 " + QString::number(bulbsCount), 1);
 
-for(int i = 0; i < bulbsCount; i++)
-	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0");
+int c = 10;
+while(c--){
+    for(int i = 0; i < bulbsCount; i++)
+        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0", 2);
 
-for(int i = 0; i < bulbsCount; i++)
-	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255");
+    //update
+    GeneralPort.passLine("8 3 1", 20);
+
+
+    for(int i = 0; i < bulbsCount; i++)
+        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255", 2);
+
+    //update
+    GeneralPort.passLine("8 3 1", 20);
+}
 
 return a.exec();
 }

@@ -121,7 +121,7 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 				uprBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;
 			}
 		}
-		return 1;
+		return 0;
 	break;
 
 	case SET_TICKER:
@@ -149,6 +149,10 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 	case STOP_PLAY:
 		tkrSt = DISABLE_TKR;
 		return 0;
+	break;
+
+	case UPDATE:
+		return 1;
 	break;
 
 	default:

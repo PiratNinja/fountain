@@ -1,6 +1,6 @@
 ﻿#include "serial.h"
 
-serialDev::serialDev(QString portName, int BaudRate){
+serialDev::serialDev(QString portName, int BaudRate, QSerialPort::StopBits stopBitCnt){
     PortName = portName;
     port.setPortName(portName);
     packetNumber = 1;
@@ -8,16 +8,13 @@ serialDev::serialDev(QString portName, int BaudRate){
     if (port.open(QIODevice::ReadWrite)) {
         port.setBaudRate(BaudRate);
         port.setDataBits(QSerialPort::Data8);
-        port.setStopBits(QSerialPort::OneStop);
+        port.setStopBits(stopBitCnt);
 
         connect(&port, SIGNAL(readyRead()), this, SLOT(read()));
-        connect(&TXTimer, SIGNAL(timeout()), this, SLOT(queueProc()));
+        connect(&TXTimer, SIGNAL(timeout()), this, SLOT(queueProc()));\
 
-        TXTimer.start(10);
+        TXTimer.start();
     }
-	//debug
-	connect(&TXTimer, SIGNAL(timeout()), this, SLOT(queueProc()));
-	TXTimer.start(1000);
 }
 
 void serialDev::read() {
@@ -33,25 +30,24 @@ void serialDev::read() {
     emit frameRead();
 }
 
-void serialDev::passLine(QString string){
+void serialDev::passLine(QString string, int delay){
 	QStringList list = string.split(" ");
 
-	QByteArray ba;
+    Frame frame;
     for(auto i = list.begin(); i != list.end(); i++) {
-		ba.push_back((*i).toInt());
+        frame.data.push_back((*i).toInt());
     }
-	TXData.enqueue(ba);
+    frame.delay = delay;
+
+    TXData.enqueue(frame);
 }
 
 void serialDev::queueProc(void){
 
-//    if(TXData.size()) {
-//        port.write(TXData.dequeue());
-//    }
-
-	//debug
-
-	std::cout << ;
-	if(packetNumber++ %2) std::cout << "\rsome string";
-	else std::cout << "\rsome longer string";
+    TXTimer.stop();
+    if(TXData.size()) {
+        Frame temp = TXData.dequeue();
+        port.write(temp.data);
+        TXTimer.start(temp.delay);
+    }
 }
