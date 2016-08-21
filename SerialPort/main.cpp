@@ -4,6 +4,8 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include "serial.h"
+#include <iostream>
+#include "windows.h"
 
 QT_USE_NAMESPACE
 
@@ -25,20 +27,18 @@ serialDev GeneralPort("COM4", 115000, QSerialPort::OneStop);
 
 uint bulbsCount = 72;
 
-GeneralPort.passLine("3 4 1 " + QString::number(bulbsCount), 1);
+GeneralPort.passLine("3 4 1 " + QString::number(bulbsCount), 2);
 
-int c = 10;
 while(c--){
-    for(int i = 0; i < bulbsCount; i++)
-        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0", 2);
-
+    for(int i = 0; i < bulbsCount; i++) {
+        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0", 1);
+    }
     //update
     GeneralPort.passLine("8 3 1", 20);
 
-
-    for(int i = 0; i < bulbsCount; i++)
-        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255", 2);
-
+    for(int i = 0; i < bulbsCount; i++) {
+        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255", 1);
+    }
     //update
     GeneralPort.passLine("8 3 1", 20);
 }

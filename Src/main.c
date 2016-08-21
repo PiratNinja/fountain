@@ -86,32 +86,33 @@ int main(void) {
 
 	bulbsData->countBulbs = MAX_COUNT_BULBS;
 	bulbsData->curPos = 0;
-	Bulb b = {255, 255, 255, 0};
+
 	for(uint8_t i = 0; i < bulbsData->countBulbs; i++)
-		bulbsData->bulbs[i] = b;
+		bulbsData->bulbs[i] = (Bulb) {255, 255, 255, 0};
 	updateBulbs = 1; //максимальна яркость на все цвета
 
 	while (1) {
-		generalPort();
+		if (!generalPort()) continue;
 
-		//digitalInputs();
+		if (countRecByte) {
+			addCommand((Command*)recBuf, countRecByte);
+			countRecByte = 0;
+		}
 
-		//if(commandReception == 0){
-			if(!updateBulbs) {
-				queueItem* QE = dequeuingCommand();
-				if(QE) updateBulbs = cmdRoutine(&QE->cmd, QE->size);
-			}
+		if(!updateBulbs) {
+			queueItem* QE = dequeuingCommand();
+			if(QE) updateBulbs = cmdRoutine(&QE->cmd, QE->size);
+		}
 
-			curTime = HAL_GetTick();
+		curTime = HAL_GetTick();
 
 			if(updateBulbs) DMXPort(curTime, &lastTime, &updateBulbs, bulbsData);
-		//}
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	//байт получен
-	recState = 3;
+	recState = 1;
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)

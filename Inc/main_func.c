@@ -42,71 +42,20 @@ static inline void digitalInputs()	{
 	}
 }
 
-static inline void generalPort() {
+static inline uint8_t generalPort() {
 
-//	static uint8_t countRecByte = 0;
-//
-//	switch (recState) {
-//		case 1:
-//			//IDLE на линии и ненулевое количество принятых байт - конец команды.
-//			if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) && countRecByte > 0)
-//				recState = 2;
-//		break;
-//
-//		case 2:
-//			addCommand((Command*)recBuf, countRecByte);
-//			#ifdef DEBUG
-//					HAL_UART_Transmit_IT(&huart1, recBuf, countRecByte);
-//			#endif
-//			countRecByte = 0;
-//			recState = 0;
-//		break;
-//
-//		case 3:
-//			recBuf[countRecByte++] = tmp;
-//			recState = 0;
-//		break;
-//	}
-//
-//	if (recState == 0) {
-//		// запускаем ожидание данных
-//		recState = 1;
-//		// пофиг на переполенние по приему (выбираем только начало данных)
-//		__HAL_UART_CLEAR_OREFLAG(&huart1);
-//
-//		HAL_UART_Receive_IT(&huart1, &tmp, 1);
-//	}
 	switch (recState) {
-		case 1:
-			//IDLE на линии и ненулевое количество принятых байт - конец команды.
-			if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) && countRecByte > 0)
-				recState = 2;
-		break;
-
-		case 2:
-			addCommand((Command*)recBuf, countRecByte);
-			#ifdef DEBUG
-				HAL_UART_Transmit_IT(&huart1, recBuf, countRecByte);
-			#endif
-			countRecByte = 0;
-			//commandReception = 0;
-			recState = 0;
-		break;
-
 		case 0:
 			// запускаем ожидание данных
-			// пофиг на переполенние по приему (выбираем только начало данных)
-			__HAL_UART_CLEAR_OREFLAG(&huart1);
 			HAL_UART_Receive_IT(&huart1, &tmp, 1);
-			recState = 1;
-		break;
-
-		case 3:
+			recState = 2;
+			break;
+		case 1:
 			recBuf[countRecByte++] = tmp;
 			recState = 0;
-			//commandReception = 1;
-		break;
-		}
+			break;
+	}
+	return __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE);
 }
 
 static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* updateBulbs, BulbsGroup* bulbsData) {
