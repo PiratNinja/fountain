@@ -39,5 +39,7 @@ signals:
     void frameRead();
 };
 
+
+
 #endif // SERIAL
 

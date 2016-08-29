@@ -49,5 +49,6 @@ void serialDev::queueProc(void){
         Frame temp = TXData.dequeue();
         port.write(temp.data);
         TXTimer.start(temp.delay);
+        std::cout << "send data" << std::endl;
     }
 }

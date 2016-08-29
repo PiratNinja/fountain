@@ -49,6 +49,8 @@ extern BulbsGroup lwrBulbs;
 
 // получаем только номер команды и состояние цветов
 #define RECV_SIZE 128
+#define PAUSE_UART1 1
+
 uint8_t recBuf[RECV_SIZE];
 uint8_t tmp;
 uint8_t recState = 0, dmxState = 0;
@@ -88,7 +90,7 @@ int main(void) {
 	bulbsData->curPos = 0;
 
 	for(uint8_t i = 0; i < bulbsData->countBulbs; i++)
-		bulbsData->bulbs[i] = (Bulb) {255, 255, 255, 0};
+		bulbsData->bulbs[i] = (Bulb) { 255, 255, 255, 0 };
 	updateBulbs = 1; //максимальна яркость на все цвета
 
 	while (1) {

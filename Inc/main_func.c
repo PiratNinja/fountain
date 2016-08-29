@@ -44,6 +44,10 @@ static inline void digitalInputs()	{
 
 static inline uint8_t generalPort() {
 
+	__IO static uint32_t bPause;
+	__IO static uint8_t TRFlag = 0;
+	//__IO uint32_t diff, diff2;
+
 	switch (recState) {
 		case 0:
 			// запускаем ожидание данных
@@ -52,10 +56,31 @@ static inline uint8_t generalPort() {
 			break;
 		case 1:
 			recBuf[countRecByte++] = tmp;
+			TRFlag = 1;
 			recState = 0;
 			break;
+		case 2:
+			//фиксация времени начала паузы на шине при условии наличия признака начала передачи
+			if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) && TRFlag) {
+				bPause = HAL_GetTick();
+				recState = 3;
+			}
+			break;
+		case 3:
+			//проверка окончания паузы: если пауза больше или равна установленной
+			//то фиксируем конец передачи + инициируем ожидание новой передачи, при условии все еще наличия паузы на шине.
+
+			//debug
+			//diff = HAL_GetTick() - bPause;
+			if(HAL_GetTick() - bPause >= PAUSE_UART1 && __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
+				TRFlag = 0;
+				//diff = HAL_GetTick();
+				HAL_UART_Receive_IT(&huart1, &tmp, 1);
+				//diff2 = HAL_GetTick() - diff;
+				return 1; //end of frame
+			}
 	}
-	return __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE);
+	return 0;
 }
 
 static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* updateBulbs, BulbsGroup* bulbsData) {
@@ -70,8 +95,7 @@ static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* update
 				*lastTime = curTime;
 				dmxState = 1;
 			}
-		break;
-
+			break;
 		case 1:
 			// отправляем break
 			dmxState = 2;
@@ -81,58 +105,51 @@ static inline void DMXPort(uint32_t curTime, uint32_t* lastTime, uint8_t* update
 			firstPartLength = (bulbsData->countBulbs - bulbsData->curPos) * sizeof(Bulb);
 			secondPartData = (uint8_t*) &(bulbsData->bulbs[0]);
 			secondPartLength = bulbsData->curPos * sizeof(Bulb);
-		break;
-
+			break;
 		case 2:
 			if (curTime > *lastTime) {
 				dmxState = 3;
 				*lastTime = curTime;
 				dmx_pin_uart();
 			}
-		break;
-
+			break;
 		//стартовый байт
 		case 3:
 			dmxState = 4;
 			*lastTime = curTime;
 			HAL_UART_Transmit_IT(&huart2, &startByte, 1);
-		break;
-
+			break;
 		case 4:
 			if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)) {
 				*lastTime = curTime;
 				dmxState = 5;
 			}
-		break;
-
+			break;
 		//прожекторы - первая часть узора
 		case 5:
 			dmxState = 6;
 			*lastTime = curTime;
 			HAL_UART_Transmit_IT(&huart2, firstPartData, firstPartLength);
-		break;
-
+			break;
 		case 6:
 			if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)) {
 				*lastTime = curTime;
 				dmxState = 7;
 			}
-		break;
-
+			break;
 		//вторая
 		case 7:
 			dmxState = 8;
 			*lastTime = curTime;
 			HAL_UART_Transmit_IT(&huart2, secondPartData, secondPartLength);
-		break;
-
+			break;
 		case 8:
 			if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)) {
 				*lastTime = curTime;
 				*updateBulbs = 0;
 				dmxState = 0;
 			}
-		break;
+			break;
 	}
 }
 
