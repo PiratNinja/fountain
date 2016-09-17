@@ -31,46 +31,28 @@ uint uartPause = 2;
 
 QString onString, offString;
 
-onString.push_back("2");
-offString.push_back("2");
+onString.push_back("1");
+offString.push_back("1");
 
-for(int i=0; i<1; i++)
-    onString.push_back(" 100 0");
+for(int i=0; i < 9; i++)
+    onString.push_back(" 170");
 
-for(int i=0; i<20; i++)
-    offString.push_back(" 0 100");
-
-
+for(int i=0; i < 10; i++)
+    offString.push_back(" 0");
 
 //GeneralPort.passLine("3 4 1 " + QString::number(bulbsCount), uartPause);
 
-
-
-int switchCount = 2;
+int switchCount = 1;
 while(switchCount--) {
-    int c = 20;
-    while(c--){
-    //    for(int i = 0; i < bulbsCount; i++) {
-    //       GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0", uartPause);
-    //       //GeneralPort.passLine("8 3 1", 20);
-    //    }
-    //    //update
-    //    GeneralPort.passLine("8 3 1", 20);
-
-    //    for(int i = 0; i < bulbsCount; i++) {
-    //        GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255", uartPause);
-    //    }
-    //    //update
-    //    GeneralPort.passLine("8 3 1", 20);
-
-        io.passLine(onString, 10);
-    }
-
-    c = 20;
+    int c = 7200;
     while(c--) {
-        io.passLine(offString, 10);
-
+        io.passLine(onString,  2);
     }
-}
+
+//    c = 50;
+//    while(c--) {
+//        io.passLine(offString, 10);
+//    }
+    }
 return a.exec();
 }
