@@ -14,6 +14,7 @@ typedef enum {
     SET_TICKER = 5,         	// Задать эффект бегущей строки
     START_PLAY = 6,         	// Начать работу
     STOP_PLAY = 7,              // Остановить работу
+	UPDATE = 8
 } CommandsType;
 
 typedef enum {
@@ -53,6 +54,10 @@ typedef struct {
 } StopPlayCommand;
 
 typedef struct {
+	uint8_t level;
+} UpdateCmd;
+
+typedef struct {
     uint8_t type;
     uint8_t length;
     union {
@@ -61,6 +66,7 @@ typedef struct {
         SetTickerCmd     ticker;
         StartPlayCommand start;
         StopPlayCommand  stop;
+        UpdateCmd 		 update;
     } data;
 } Command;
 

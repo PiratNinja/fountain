@@ -25,7 +25,6 @@ TMPL = $(DEV)Source/Templates/
 DEF = -DSTM32F100xB
 CPU = cortex-m3
 LD_CMD = "./SW4STM32/fw Configuration/STM32F100C6Tx_FLASH.ld"
-
 CFLAGS  = $(DEF) -Winline -Wall -std=c99 -O1 -g -mcpu=$(CPU) -mthumb -fno-common
 AFLAGS  = -ahls -mapcs-32
 LFLAGS  = -v -nostartfiles --gc-sections -T $(LD_CMD)

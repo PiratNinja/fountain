@@ -1,9 +1,11 @@
-﻿#include <QCoreApplication>
+﻿ #include <QCoreApplication>
 #include <QDebug>
 
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include "serial.h"
+#include <iostream>
+#include "windows.h"
 
 QT_USE_NAMESPACE
 
@@ -18,20 +20,39 @@ foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
 	qDebug() << "Manufacturer: " << info.manufacturer();
 	qDebug() << "Standard BaudRates: " << info.standardBaudRates();
 }
-system("CLS");
+//system("CLS");
 
-serialDev DMXPort("COM3", 256000);
-serialDev GeneralPort("COM4", 115000);
+//serialDev DMXPort("COM3", 256000, QSerialPort::TwoStop);
+//serialDev GeneralPort("COM4", 115000, QSerialPort::OneStop);
+serialDev io("COM3", 115200, QSerialPort::OneStop);
 
 uint bulbsCount = 72;
+uint uartPause = 2;
 
-GeneralPort.passLine("3 0 1 " + QString::number(bulbsCount));
+QString onString, offString;
 
-for(int i = 0; i < bulbsCount; i++)
-	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0");
+onString.push_back("1");
+offString.push_back("1");
 
-for(int i = 0; i < bulbsCount; i++)
-	GeneralPort.passLine("4 7 1 " + QString::number(i) + " 255 255 255");
+for(int i=0; i < 9; i++)
+    onString.push_back(" 170");
 
+for(int i=0; i < 10; i++)
+    offString.push_back(" 0");
+
+//GeneralPort.passLine("3 4 1 " + QString::number(bulbsCount), uartPause);
+
+int switchCount = 1;
+while(switchCount--) {
+    int c = 7200;
+    while(c--) {
+        io.passLine(onString,  2);
+    }
+
+//    c = 50;
+//    while(c--) {
+//        io.passLine(offString, 10);
+//    }
+    }
 return a.exec();
 }

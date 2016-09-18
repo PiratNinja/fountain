@@ -10,6 +10,11 @@
 #include <QList>
 #include <QStringList>
 
+struct Frame {
+    QByteArray data;
+    int delay;
+};
+
 class serialDev : public QObject {
     Q_OBJECT
 
@@ -20,10 +25,10 @@ private:
     int packetNumber;
 
 public:
-    serialDev(QString portName, int BaudRate);
-    void passLine(QString string);
+    serialDev(QString portName, int BaudRate, QSerialPort::StopBits stopBitCnt);
+    void passLine(QString string, int delay);
 
-    QQueue<QByteArray> TXData;
+    QQueue<Frame> TXData;
     QString PortName;
 
 public slots:
@@ -33,6 +38,8 @@ public slots:
 signals:
     void frameRead();
 };
+
+
 
 #endif // SERIAL
 
