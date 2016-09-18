@@ -44,9 +44,10 @@
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
-// получаем только номер команды и состояние цветов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 #define RECV_SIZE 		(uint8_t) 128
 #define DMX_TX_DELAY 	(uint8_t) 1
+#define PAUSE_UART1		1
 
 uint8_t recBuf[RECV_SIZE];
 uint8_t tmp;
@@ -76,8 +77,8 @@ int main(void) {
 
 	dmx_pin_uart();
 
-	__IO uint32_t lastTime = HAL_GetTick();
-	__IO uint32_t curTime = lastTime;
+	volatile uint32_t lastTime = HAL_GetTick();
+	volatile uint32_t curTime = lastTime;
 	uint8_t updateBulbs = 0;
 
 	//BulbsGroup* bulbsData = &uprBulbs;
