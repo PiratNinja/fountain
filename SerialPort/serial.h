@@ -1,6 +1,7 @@
 ﻿#ifndef SERIAL
 #define SERIAL
 
+#include <windows.h>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QString>

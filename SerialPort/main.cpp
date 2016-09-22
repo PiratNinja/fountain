@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     }
     //system("CLS");
 
-    serialDev DMXPort("COM3", 256000, QSerialPort::TwoStop);
+    //serialDev DMXPort("COM3", 256000, QSerialPort::TwoStop);
     serialDev GeneralPort("COM5", 115200, QSerialPort::OneStop);
 
     uint bulbsCount = 72;
@@ -43,9 +43,10 @@ int main(int argc, char *argv[])
         //update
         GeneralPort.passLine("8 3 1", 2);
     }
-    c = 10;
-    while(c--)
-        GeneralPort.passLine("9 3 1", 2);
+
+    GeneralPort.passLine("9 3 1", 2);
+
+    GeneralPort.queueProc();
 
     return a.exec();
 }

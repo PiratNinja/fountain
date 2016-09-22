@@ -11,9 +11,7 @@ serialDev::serialDev(QString portName, int BaudRate, QSerialPort::StopBits stopB
         port.setStopBits(stopBitCnt);
 
         connect(&port, SIGNAL(readyRead()), this, SLOT(read()));
-        connect(&TXTimer, SIGNAL(timeout()), this, SLOT(queueProc()));\
-
-        TXTimer.start();
+        //connect(&port, SIGNAL(bytesWritten()), this, SLOT(queueProc()));
     }
 }
 
@@ -44,11 +42,11 @@ void serialDev::passLine(QString string, int delay){
 
 void serialDev::queueProc(void){
 
-    TXTimer.stop();
-    if(TXData.size()) {
+    while(!TXData.isEmpty()) {
         Frame temp = TXData.dequeue();
         port.write(temp.data);
-        TXTimer.start(temp.delay);
+        while(!port.waitForBytesWritten(-1));
         std::cout << "send data" << std::endl;
+        Sleep(1);
     }
 }
