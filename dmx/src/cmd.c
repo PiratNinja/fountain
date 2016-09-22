@@ -2,6 +2,9 @@
 #include "ticker.h"
 #include "bulb.h"
 
+extern UART_HandleTypeDef huart1;
+extern Identificator IDDev;
+
 uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 
 	if(cmd->type != PLAIN_ROW && cmd->type != PACKED_ROW) {
@@ -12,32 +15,31 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 	case PLAIN_ROW:
 	case PACKED_ROW:
 		if(tkrState() == ENABLE_TKR) return upperTickerPrc() | lowerTickerPrc();
-	break;
-
+		break;
 	case SET_BULBS_COUNT:
 		setBulbCount(cmd);
-	break;
-
+		break;
 	case SET_BULB_COLOR:
 		setBulbColor(cmd);
-		return 1;
-	break;
-
+		break;
 	case SET_TICKER:
 		setTicker(cmd);
-	break;
-
+		break;
 	case START_PLAY:
 		play();
-	break;
-
+		break;
 	case STOP_PLAY:
 		stop();
-	break;
-
+		break;
+	case UPDATE:
+		return 1;
+		break;
+	case GETID:
+		HAL_UART_Transmit_IT(&huart1, (uint8_t*) &IDDev, sizeof(IDDev));
+		break;
 	default:
 		return 0;
-	break;
+		break;
 	}
 	return 0;
 }

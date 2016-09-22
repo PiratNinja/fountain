@@ -49,10 +49,9 @@ UART_HandleTypeDef huart2;
 #define DMX_TX_DELAY 	(uint8_t) 1
 #define PAUSE_UART1		1
 
+Identificator IDDev;
 uint8_t recBuf[RECV_SIZE];
-uint8_t tmp;
-uint8_t recState = 0, dmxState = 0;
-uint8_t commandReception = 0;
+uint8_t recState = 0;
 uint8_t countRecByte = 0;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,19 +76,23 @@ int main(void) {
 
 	dmx_pin_uart();
 
-	volatile uint32_t lastTime = HAL_GetTick();
-	volatile uint32_t curTime = lastTime;
-	uint8_t updateBulbs = 0;
+	volatile uint8_t updateBulbs = 0;
 
-	//BulbsGroup* bulbsData = &uprBulbs;
+	//IDDev = (Identificator) { "VODA" };
+	//IDDev = (Identificator) { "UPPER" };
+	IDDev = (Identificator) { "LOWER" };
+	//BulbsGroup* bulbsData = getUprBulbs();
 	BulbsGroup* bulbsData = getLwrBulbs();
 
+	//default conf bulbs
 	bulbsData->countBulbs = MAX_COUNT_BULBS;
 	bulbsData->curPos = 0;
-
+	//максимальная яркость на все цвета
 	for(uint8_t i = 0; i < bulbsData->countBulbs; i++)
 		bulbsData->bulbs[i] = (Bulb) { 255, 255, 255, 0 };
-	updateBulbs = 1; //максимальна яркость на все цвета
+
+	usDelay(200000);
+	while (DMXPort(bulbsData));
 
 	while (1) {
 		if (!generalPort()) continue;
@@ -104,9 +107,7 @@ int main(void) {
 			if(QE) updateBulbs = cmdRoutine(&QE->cmd, QE->size);
 		}
 
-		curTime = HAL_GetTick();
-
-			if(updateBulbs) DMXPort(curTime, &lastTime, &updateBulbs, bulbsData);
+		if(updateBulbs) updateBulbs = DMXPort(bulbsData);
 	}
 }
 

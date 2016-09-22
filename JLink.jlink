@@ -1,0 +1,8 @@
+si 1
+speed 100
+r
+h
+loadbin D:\Programming\shield_fw\main.bin,0x08000000
+r
+go
+exit
