@@ -22,7 +22,7 @@ DEV_INC = $(DEV)Include/
 TMPL = $(DEV)Source/Templates/
 
 
-DEF = -DSTM32F100xB
+DEF = -DSTM32F103xB
 CPU = cortex-m3
 LD_CMD = "./SW4STM32/fw Configuration/STM32F100C6Tx_FLASH.ld"
 CFLAGS  = $(DEF) -Winline -Wall -std=c99 -O1 -g -mcpu=$(CPU) -mthumb -fno-common

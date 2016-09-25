@@ -5,6 +5,11 @@
 extern UART_HandleTypeDef huart1;
 extern Identificator IDDev;
 
+void TransmitToPC(uint8_t *TXData, uint16_t size) {
+
+	HAL_UART_Transmit_IT(&huart1, TXData, size);
+}
+
 uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 
 	if(cmd->type != PLAIN_ROW && cmd->type != PACKED_ROW) {
@@ -35,7 +40,7 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 		return 1;
 		break;
 	case GETID:
-		HAL_UART_Transmit_IT(&huart1, (uint8_t*) &IDDev, sizeof(IDDev));
+		TransmitToPC((uint8_t*) &IDDev, sizeof(IDDev));
 		break;
 	default:
 		return 0;

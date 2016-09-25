@@ -20,7 +20,6 @@ class serialDev : public QObject {
     Q_OBJECT
 
 private:
-    QSerialPort port;
     QByteArray RX_data;
     QTimer TXTimer;
     int packetNumber;
@@ -31,6 +30,8 @@ public:
 
     QQueue<Frame> TXData;
     QString PortName;
+
+    QSerialPort port;
 
 public slots:
     void read();

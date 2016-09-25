@@ -45,14 +45,18 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 // �������� ������ ����� ������� � ��������� ������
-#define RECV_SIZE 		(uint8_t) 128
-#define DMX_TX_DELAY 	(uint8_t) 1
-#define PAUSE_UART1		1
+#define RECV_SIZE 				(uint8_t) 		128
+#define DMX_TX_DELAY_US			(uint8_t) 		200
+#define LENGTH_DMX_BUS_RESET_US (uint32_t)  	200
+#define PAUSE_UART1_US			(uint32_t)		100
+#define PREPBULBS_DELAY_US 		(uint32_t) 		2000e3
+
+#define USTO_01MS(t)		t/100
 
 Identificator IDDev;
-uint8_t recBuf[RECV_SIZE];
-uint8_t recState = 0;
-uint8_t countRecByte = 0;
+volatile uint8_t recBuf[RECV_SIZE];
+volatile uint8_t recState = 0;
+volatile uint8_t countRecByte = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -78,11 +82,11 @@ int main(void) {
 
 	volatile uint8_t updateBulbs = 0;
 
-	//IDDev = (Identificator) { "VODA" };
+	IDDev = (Identificator) { "VODA" };
 	//IDDev = (Identificator) { "UPPER" };
-	IDDev = (Identificator) { "LOWER" };
-	//BulbsGroup* bulbsData = getUprBulbs();
-	BulbsGroup* bulbsData = getLwrBulbs();
+	//IDDev = (Identificator) { "LOWER" };
+	BulbsGroup* bulbsData = getUprBulbs();
+	//BulbsGroup* bulbsData = getLwrBulbs();
 
 	//default conf bulbs
 	bulbsData->countBulbs = MAX_COUNT_BULBS;
@@ -91,8 +95,9 @@ int main(void) {
 	for(uint8_t i = 0; i < bulbsData->countBulbs; i++)
 		bulbsData->bulbs[i] = (Bulb) { 255, 255, 255, 0 };
 
-	usDelay(200000);
+	delay(USTO_01MS(PREPBULBS_DELAY_US));
 	while (DMXPort(bulbsData));
+	TransmitToPC((uint8_t*) &IDDev, sizeof(IDDev));
 
 	while (1) {
 		if (!generalPort()) continue;
@@ -112,7 +117,7 @@ int main(void) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	//байт получен
+	//получен один байт
 	recState = 1;
 }
 
@@ -126,36 +131,35 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 void SystemClock_Config(void)
 {
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/10000);
 
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+    /* SysTick_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* USART1 init function */
 void MX_USART1_UART_Init(void)
 {
-
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -170,7 +174,6 @@ void MX_USART1_UART_Init(void)
 /* USART2 init function */
 void MX_USART2_UART_Init(void)
 {
-
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 250000;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;

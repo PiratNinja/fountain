@@ -20,6 +20,11 @@ void usDelay(uint32_t us) {
     while (us--);
 }
 
+void delay(uint32_t dTime) {
+	uint32_t cTime = HAL_GetTick();
+	while(HAL_GetTick() - cTime < dTime);
+}
+
 static inline void digitalInputs()	{
 	static uint8_t inState = 0, inStateOld = 0;
 
@@ -71,9 +76,12 @@ static inline uint8_t generalPort() {
 		case 3:
 			//проверка окончания паузы: если пауза больше или равна установленной
 			//то фиксируем конец передачи + инициируем ожидание новой передачи, при условии все еще наличия паузы на шине.
-			if(HAL_GetTick() - bPause >= PAUSE_UART1 && __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
+			if(HAL_GetTick() - bPause >= USTO_01MS(PAUSE_UART1_US) && __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
 				TRFlag = 0;
 				HAL_UART_Receive_IT(&huart1, &tmp, 1);
+#ifdef DEBUG
+				HAL_UART_Transmit_IT(&huart1, recBuf, countRecByte);
+#endif
 				return 1; //end of frame
 			}
 			break;
@@ -84,16 +92,14 @@ static inline uint8_t generalPort() {
 static inline uint8_t DMXPort(const BulbsGroup* bulbsData) {
 
 	static uint8_t dmxState = 1;
-	static uint32_t lastTime, curTime;
+	static uint32_t beginBreak;
 	static uint8_t *firstPartData, *secondPartData;
 	static uint16_t firstPartLength, secondPartLength;
 	uint8_t startByte = 0;
 
-	curTime = HAL_GetTick();
-
 	switch (dmxState) {
 //		case 0:
-//			if (curTime - *lastTime > DMX_TX_DELAY) { // отправляем через в 1мс
+//			if (curTime - *lastTime > USTO_01MS(DMX_TX_DELAY_US)) { // отправляем через в 1мс
 //				*lastTime = curTime;
 //				dmxState = 1;
 //			}
@@ -108,10 +114,10 @@ static inline uint8_t DMXPort(const BulbsGroup* bulbsData) {
 			secondPartData = (uint8_t*) &(bulbsData->bulbs[0]);
 			secondPartLength = bulbsData->curPos * sizeof(Bulb);
 
-			lastTime = curTime;
+			beginBreak = HAL_GetTick();
 			break;
 		case 2:
-			if (curTime - lastTime) {
+			if (HAL_GetTick() - beginBreak >= USTO_01MS(LENGTH_DMX_BUS_RESET_US)) {
 				dmxState = 3;
 				dmx_pin_uart();
 			}
@@ -119,7 +125,6 @@ static inline uint8_t DMXPort(const BulbsGroup* bulbsData) {
 		//стартовый байт
 		case 3:
 			dmxState = 4;
-			lastTime = curTime;
 			HAL_UART_Transmit_IT(&huart2, &startByte, 1);
 			break;
 		case 4:
