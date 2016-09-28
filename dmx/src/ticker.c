@@ -66,3 +66,7 @@ uint8_t upperTickerPrc() {
 		return 1;	
 	}
 }
+
+int someFunc(int x, int y) {
+	return 1;
+}

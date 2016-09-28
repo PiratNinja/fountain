@@ -47,46 +47,72 @@ static inline void digitalInputs()	{
 	}
 }
 
-static inline uint8_t generalPort() {
+static inline int8_t generalPort() {
 
 	static uint8_t tmp;
+	static int8_t countRec;
 	volatile static uint32_t bPause;
 	volatile static uint8_t TRFlag = 0;
 
 	switch (recState) {
 		case 0:
-			// запускаем ожидание данных
-			HAL_UART_Receive_IT(&huart1, &tmp, 1);
+			// запускаем ожидание нового пакета
 			recState = 2;
-			break;
+			countRec = 0;
+			HAL_UART_Receive_IT(&huart1, &tmp, 1);
+#ifdef DEBUG
+			SEGGER_RTT_printf (0, "\nWait data of new packet.. \n");
+#endif
+			return -1;
 		case 1:
-			if(countRecByte < RECV_SIZE) {
-				recBuf[countRecByte++] = tmp;
+			// принят байт
+			if(countRec < RECV_SIZE) {
+				recBuf[countRec++] = tmp;
 				TRFlag = 1;
 			}
-			recState = 0;
+			recState = 4;
+#ifdef DEBUG
+			SEGGER_RTT_printf (0, "One byte recive. \n");
+#endif
 			break;
 		case 2:
-			//фиксация времени начала паузы на шине при условии наличия признака начала передачи
+			//фиксация времени начала паузы на шине, при условии наличия признака начала передачи
 			if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) && TRFlag) {
 				bPause = HAL_GetTick();
 				recState = 3;
+#ifdef DEBUG
+				SEGGER_RTT_printf (0, "Pause...");
+#endif
 			}
+			else
+				return -1;
 			break;
 		case 3:
 			//проверка окончания паузы: если пауза больше или равна установленной
 			//то фиксируем конец передачи + инициируем ожидание новой передачи, при условии все еще наличия паузы на шине.
 			if(HAL_GetTick() - bPause >= USTO_01MS(PAUSE_UART1_US) && __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
 				TRFlag = 0;
+				recState = 0;
 				HAL_UART_Receive_IT(&huart1, &tmp, 1);
 #ifdef DEBUG
 				HAL_UART_Transmit_IT(&huart1, recBuf, countRecByte);
 #endif
-				return 1; //end of frame
+#ifdef DEBUG
+				SEGGER_RTT_printf (0, "end of frame! Size: %d\n", countRec);
+#endif
+				return countRec; //end of frame
 			}
 			break;
+		case 4:
+			// запускаем ожидание данных
+			recState = 2;
+			HAL_UART_Receive_IT(&huart1, &tmp, 1);
+#ifdef DEBUG
+			SEGGER_RTT_printf (0, "Wait data.. \n");
+#endif
+			return -1;
 	}
-	return 0;
+	return 0; //идет прием данных
 }
 
 static inline uint8_t DMXPort(const BulbsGroup* bulbsData) {

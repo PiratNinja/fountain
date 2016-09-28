@@ -2,12 +2,17 @@
 
 static ComandQueue cmdQueue;
 
-uint8_t getNumberCmd() {
-	return (cmdQueue.nextCmd > cmdQueue.firstCmd) ? cmdQueue.nextCmd - cmdQueue.firstCmd :
-												  cmdQueue.nextCmd - cmdQueue.firstCmd - (~((uint8_t) MAX_LENGTH_QUEUE)+1);
+inline static uint8_t getNumberCmd() {
+	return (cmdQueue.nextCmd > cmdQueue.firstCmd) ?  cmdQueue.nextCmd - cmdQueue.firstCmd :
+												  	  cmdQueue.nextCmd - cmdQueue.firstCmd - (~((uint8_t) MAX_LENGTH_QUEUE)+1);
+}
+
+uint8_t getExNumberCmd() {
+	return cmdQueue.lengthQueue;
 }
 
 void addCommand(Command* cmd, uint16_t size) {
+
 	if(cmdQueue.lengthQueue < MAX_LENGTH_QUEUE) {
 		cmdQueue.commandBuffer[cmdQueue.nextCmd].cmd = *cmd;
 		cmdQueue.commandBuffer[cmdQueue.nextCmd].size = size;

@@ -37,6 +37,9 @@
 #include "bulb.h"
 #include "cmd.h"
 #include "queue.h"
+#include "SEGGER_RTT.h"
+#include "SEGGER_RTT_Conf.h"
+#include <string.h>
 
 //#define DEBUG
 
@@ -54,9 +57,8 @@ UART_HandleTypeDef huart2;
 #define USTO_01MS(t)		t/100
 
 Identificator IDDev;
-volatile uint8_t recBuf[RECV_SIZE];
-volatile uint8_t recState = 0;
-volatile uint8_t countRecByte = 0;
+uint8_t recBuf[RECV_SIZE];
+uint8_t recState = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -80,13 +82,16 @@ int main(void) {
 
 	dmx_pin_uart();
 
-	volatile uint8_t updateBulbs = 0;
+	BulbsGroup* bulbsData;
+	int8_t countRecByte;
+	uint8_t updateBulbs = 0;
 
-	IDDev = (Identificator) { "VODA" };
+	IDDev = (Identificator) { "LOWER" };
 	//IDDev = (Identificator) { "UPPER" };
 	//IDDev = (Identificator) { "LOWER" };
-	BulbsGroup* bulbsData = getUprBulbs();
-	//BulbsGroup* bulbsData = getLwrBulbs();
+	if(strcmp((char*)IDDev.IDDev, "LOWER") == 0) bulbsData = getLwrBulbs();
+	else if (strcmp((char*)IDDev.IDDev, "UPPER") == 0) bulbsData = getUprBulbs();
+	else bulbsData = NULL;
 
 	//default conf bulbs
 	bulbsData->countBulbs = MAX_COUNT_BULBS;
@@ -100,19 +105,16 @@ int main(void) {
 	TransmitToPC((uint8_t*) &IDDev, sizeof(IDDev));
 
 	while (1) {
-		if (!generalPort()) continue;
+		countRecByte = generalPort();
+		if (countRecByte == 0) continue;
 
-		if (countRecByte) {
-			addCommand((Command*)recBuf, countRecByte);
-			countRecByte = 0;
-		}
+		if (countRecByte > 0) addCommand((Command*)recBuf, countRecByte);
 
 		if(!updateBulbs) {
 			queueItem* QE = dequeuingCommand();
 			if(QE) updateBulbs = cmdRoutine(&QE->cmd, QE->size);
-		}
-
-		if(updateBulbs) updateBulbs = DMXPort(bulbsData);
+		} else
+			updateBulbs = DMXPort(bulbsData);
 	}
 }
 

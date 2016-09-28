@@ -107,7 +107,7 @@ typedef struct {
 	queueItem commandBuffer[MAX_LENGTH_QUEUE];
 } ComandQueue;
 
-#define RINGINC(i, MAX) ((uint8_t)(i + 1) < MAX) ? i + 1 : i + (~MAX + (uint8_t) 1)
+#define RINGINC(i, MAX) ((uint8_t)(i + 1) < MAX) ? i + 1 : i + 1 + (~MAX + (uint8_t) 1)
 #define L_RING_SHIFT(i, stp, MAX) ((uint8_t)(i - stp) < MAX) ? \
 									(uint8_t) i - stp : \
 									(uint8_t) i - stp - (~MAX + (uint8_t) 1)

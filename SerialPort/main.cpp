@@ -35,10 +35,10 @@ int main(int argc, char *argv[])
     }
     //system("CLS");
 
-    serialDev DMXPort("COM3", 250000, QSerialPort::TwoStop);
+    //serialDev DMXPort("COM3", 250000, QSerialPort::TwoStop);
     serialDev GeneralPort("COM5", 115200, QSerialPort::OneStop);
 
-    uint bulbsCount = 10;
+    uint bulbsCount = 100;
 
     QString correctStr = "3 4 1 ";
     QString incorrectStr;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     GeneralPort.passLine(correctStr + QString::number(bulbsCount), 10);
 
-    int c = 30;
+    int c = 5;
     while(c--){
         for(int i = 0; i < bulbsCount; i++) {
             GeneralPort.passLine("4 7 1 " + QString::number(i) + " 0 0 0", 10);
