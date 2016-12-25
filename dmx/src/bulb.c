@@ -15,9 +15,36 @@ inline void setLwrBulbColor(const Command* cmd) {
 		lwrBulbs.bulbs[cmd->data.bulbColor.bulbNUmber].red = cmd->data.bulbColor.red;		
 }
 
+inline void setUprBulbsColor(const SCommand* cmd) {
+
+	setBulbSCCount(cmd);
+
+	for(uint i = 0; i < sizeof(cmd->bulbs)/sizeof(Bulb); i++) {
+		uprBulbs.bulbs[i] = cmd->bulbs[i];
+	}
+}
+
+inline void setLwrBulbsColor(const SCommand* cmd) {
+
+	setBulbSCCount(cmd);
+
+	for(uint i = 0; i < sizeof(cmd->bulbs)/sizeof(Bulb); i++) {
+		lwrBulbs.bulbs[i] = cmd->bulbs[i];
+	}
+}
+
 void setBulbColor(const Command* cmd) {
+
 	if(cmd->data.bulbColor.level) setLwrBulbColor(cmd);
 	else setUprBulbColor(cmd);
+}
+
+void setBulbsColor(const SCommand* cmd) {
+
+	
+		
+	if(cmd->level) setLwrBulbsColor(cmd);
+	else setUprBulbsColor(cmd);
 }
 
 void setBulbCount(const Command* cmd) {
@@ -25,6 +52,13 @@ void setBulbCount(const Command* cmd) {
 	uprBulbs.curPos = 0;
 	lwrBulbs.countBulbs = cmd->data.bulbsCount.lowerBulbsCount;
 	uprBulbs.countBulbs = cmd->data.bulbsCount.upperBulbsCount;
+}
+
+void setBulbSCCount(const SCommand* cmd) {
+	lwrBulbs.curPos = 0;
+	uprBulbs.curPos = 0;
+	lwrBulbs.countBulbs = cmd->length;
+	uprBulbs.countBulbs = cmd->length;
 }
 
 uint8_t getCount(Level level) {

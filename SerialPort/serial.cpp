@@ -47,6 +47,6 @@ void serialDev::queueProc(void){
         port.write(temp.data);
         while(!port.waitForBytesWritten(-1));
         std::cout << "send data" << std::endl;
-        Sleep(1);
+        Sleep(10);
     }
 }

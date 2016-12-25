@@ -12,7 +12,9 @@ void TransmitToPC(uint8_t *TXData, uint16_t size) {
 
 uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 
-	if(cmd->type != PLAIN_ROW && cmd->type != PACKED_ROW) {
+	if(cmd->type != PLAIN_ROW &&
+	   cmd->type != PACKED_ROW &&
+	   cmd->type != INIT_ALL_BULBS ) {
 		if(cmd->length != size) return 0;
 	}
 
@@ -42,6 +44,9 @@ uint8_t cmdRoutine(const Command* cmd, const uint8_t size) {
 	case GETID:
 		TransmitToPC((uint8_t*) &IDDev, sizeof(IDDev));
 		break;
+	case INIT_ALL_BULBS:
+		setBulbsColor(cmd);
+		return 1;
 	default:
 		return 0;
 		break;

@@ -48,11 +48,11 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 // �������� ������ ����� ������� � ��������� ������
-#define RECV_SIZE 				(uint8_t) 		128
-#define DMX_TX_DELAY_US			(uint8_t) 		200
-#define LENGTH_DMX_BUS_RESET_US (uint32_t)  	200
-#define PAUSE_UART1_US			(uint32_t)		100
-#define PREPBULBS_DELAY_US 		(uint32_t) 		2000e3
+#define RECV_SIZE 		(uint) 		512
+#define DMX_TX_DELAY_US		(uint8_t) 	200
+#define LENGTH_DMX_BUS_RESET_US	(uint32_t)  	200
+#define PAUSE_UART1_US		(uint32_t)	100
+#define PREPBULBS_DELAY_US 	(uint32_t) 	3000e3
 
 #define USTO_01MS(t)		t/100
 
@@ -83,12 +83,11 @@ int main(void) {
 	dmx_pin_uart();
 
 	BulbsGroup* bulbsData;
-	int8_t countRecByte;
+	int16_t countRecByte;
 	uint8_t updateBulbs = 0;
 
-	IDDev = (Identificator) { "LOWER" };
 	//IDDev = (Identificator) { "UPPER" };
-	//IDDev = (Identificator) { "LOWER" };
+	IDDev = (Identificator) { "LOWER" };
 	if(strcmp((char*)IDDev.IDDev, "LOWER") == 0) bulbsData = getLwrBulbs();
 	else if (strcmp((char*)IDDev.IDDev, "UPPER") == 0) bulbsData = getUprBulbs();
 	else bulbsData = NULL;
@@ -108,7 +107,19 @@ int main(void) {
 		countRecByte = generalPort();
 		if (countRecByte == 0) continue;
 
-		if (countRecByte > 0) addCommand((Command*)recBuf, countRecByte);
+		if (countRecByte > 0) {
+			if (recBuf[0] != INIT_ALL_BULBS) {
+				addCommand((Command*)recBuf, countRecByte);
+			}
+			else {
+				uint8_t bufferSCommand[512];
+				memcpy(bufferSCommand, recBuf, countRecByte);
+
+				if(!updateBulbs) {
+					updateBulbs = cmdRoutine(bufferSCommand, countRecByte);
+				}
+			}
+		}
 
 		if(!updateBulbs) {
 			queueItem* QE = dequeuingCommand();
@@ -163,7 +174,7 @@ void SystemClock_Config(void)
 void MX_USART1_UART_Init(void)
 {
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 230400;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

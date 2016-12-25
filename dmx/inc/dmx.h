@@ -15,7 +15,8 @@ typedef enum {
     START_PLAY = 6,         	// Начать работу
     STOP_PLAY = 7,              // Остановить работу
 	UPDATE = 8,
-	GETID = 9
+	GETID = 9,
+	INIT_ALL_BULBS = 10
 } CommandsType;
 
 typedef enum {
@@ -82,6 +83,13 @@ typedef struct {
  	uint8_t blue;
  	uint8_t strobo;
 } Bulb;
+
+typedef struct {
+    uint8_t type;
+    uint8_t length; //count bulbs
+    uint8_t level;
+    Bulb bulbs[MAX_COUNT_BULBS];
+} SCommand;
 
 typedef struct {
 	uint8_t direction;    		// Направление
